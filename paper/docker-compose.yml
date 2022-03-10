@@ -14,3 +14,4 @@ services:
     cap_drop:
       - ALL
     stdin_open: true
+    init: true
