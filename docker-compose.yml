@@ -1,0 +1,62 @@
+version: "3"
+services:
+  proxy:
+    restart: unless-stopped
+    build:
+      context: ./proxy
+      args:
+        PROXY_URL:
+        PID:
+        PGID:
+    ports:
+      - "25565:25577"
+    volumes:
+      - "${SRV_DIR}/proxy:/srv"
+    cap_drop:
+      - ALL
+    stdin_open: true
+    init: true
+    depends_on:
+      - db
+      - redis
+  world1:
+    restart: unless-stopped
+    build:
+      context: ./server
+      args:
+        SERVER_URL:
+        EULA:
+        PID:
+        PGID:
+    volumes:
+      - "${SRV_DIR}/world1:/srv"
+    cap_drop:
+      - ALL
+    stdin_open: true
+    init: true
+    depends_on:
+      - db
+      - redis
+  db:
+    image: mariadb:10
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      MARIADB_DATABASE: ${MARIADB_DATABASE}
+      MARIADB_USER: ${MARIADB_USER}
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD}
+      MARIADB_AUTO_UPGRADE: "true"
+    volumes:
+      - "db:/var/lib/mysql"
+  redis:
+    image: redis
+    restart: always
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 25577:8080
+    depends_on:
+      - db
+volumes:
+  db:
