@@ -29,7 +29,18 @@ See the [LuckPerms documentation](https://luckperms.net/wiki/Syncing-data-betwee
 
 **Note:** The address of your servers, databases *etc.* will be their compose service-names, *e.g.* `world1:25565` for the server in this example.
 
-### Environment variables
+
+### Running server commands
+
+As `stdin` is open on the proxy and server containers, you can attach to the container and run commands:
+
+```shell
+docker attach --sig-proxy=false container_name
+```
+
+**Note:** Make sure to disable the signal proxy, otherwise `ctrl-c` will stop the container, rather than leave the container.
+
+## Environment variables
 These are environment variables used as build args for images, or the docker-compose configuration.
 
 |Variable|Description|Default|
