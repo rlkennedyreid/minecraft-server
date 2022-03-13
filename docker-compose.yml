@@ -51,12 +51,5 @@ services:
   redis:
     image: redis
     restart: always
-  adminer:
-    image: adminer
-    restart: always
-    ports:
-      - 25577:8080
-    depends_on:
-      - db
 volumes:
   db:
