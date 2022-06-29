@@ -1,7 +1,7 @@
 version: "3"
 services:
   proxy:
-    restart: unless-stopped
+    restart: always
     build:
       context: ./proxy
       args:
@@ -18,7 +18,6 @@ services:
     init: true
     depends_on:
       - db
-      - redis
   world1:
     restart: unless-stopped
     build:
@@ -36,10 +35,10 @@ services:
     init: true
     depends_on:
       - db
-      - redis
+      - mysql-db
   db:
     image: mariadb:10
-    restart: unless-stopped
+    restart: always
     environment:
       MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
       MARIADB_DATABASE: ${MARIADB_DATABASE}
@@ -48,8 +47,32 @@ services:
       MARIADB_AUTO_UPGRADE: "true"
     volumes:
       - "db:/var/lib/mysql"
+    depends_on:
+      - redis
+  mysql-db:
+    image: mysql
+    hostname: mysql-db
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - "mysql-db:/var/lib/mysql"
+    cap_add:
+      - SYS_NICE
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8181:8080
+    environment:
+      ADMINER_DESIGN: "dracula"
   redis:
     image: redis
     restart: always
 volumes:
   db:
+  mysql-db:
