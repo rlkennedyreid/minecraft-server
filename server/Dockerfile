@@ -2,10 +2,8 @@ FROM openjdk:17-slim
 
 RUN \
 apt-get update --yes --quiet && \
-apt-get upgrade --yes --quiet && \
-apt-get install --yes --quiet wget neovim && \
-apt-get autoremove --yes --quiet --purge && \
-apt-get clean --yes --quiet
+apt-get install --yes --quiet --no-install-recommends wget neovim && \
+rm -rf /var/lib/apt/lists/*
 
 ARG \
 SERVER_URL \

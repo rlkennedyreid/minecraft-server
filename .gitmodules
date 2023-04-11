@@ -1,0 +1,3 @@
+[submodule "minecraft-watcher"]
+	path = minecraft-watcher
+	url = https://github.com/rlkennedyreid/minecraft-watcher.git

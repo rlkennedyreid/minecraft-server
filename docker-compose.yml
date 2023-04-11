@@ -46,7 +46,7 @@ services:
       MARIADB_PASSWORD: ${MARIADB_PASSWORD}
       MARIADB_AUTO_UPGRADE: "true"
     volumes:
-      - "db:/var/lib/mysql"
+      - "${SRV_DIR}/mariadb:/var/lib/mysql"
     depends_on:
       - redis
   mysql-db:
@@ -60,19 +60,33 @@ services:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
-      - "mysql-db:/var/lib/mysql"
+      - "${SRV_DIR}/mysql:/var/lib/mysql"
     cap_add:
       - SYS_NICE
-  adminer:
-    image: adminer
-    restart: always
-    ports:
-      - 8181:8080
+  watcher:
+    image: minecraft-watcher
+    restart: "unless-stopped"
+    build:
+      context: ./minecraft-watcher
     environment:
-      ADMINER_DESIGN: "dracula"
+      KILL_WEBHOOK: ${KILL_WEBHOOK}
+      HOST: ${HOST}
+      LOG_LEVEL: ${LOG_LEVEL}
+      TIMEOUT_S: ${TIMEOUT_S}
+      PORT: ${PORT}
+    cap_drop:
+      - ALL
+    init: true
+    depends_on:
+      - world1
+      - proxy
+  # adminer:
+  #   image: adminer
+  #   restart: always
+  #   ports:
+  #     - 8181:8080
+  #   environment:
+  #     ADMINER_DESIGN: "dracula"
   redis:
     image: redis
     restart: always
-volumes:
-  db:
-  mysql-db:
