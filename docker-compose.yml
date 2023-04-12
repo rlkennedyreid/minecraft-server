@@ -1,23 +1,32 @@
 version: "3"
 services:
-  proxy:
+  redis:
+    image: redis
     restart: always
-    build:
-      context: ./proxy
-      args:
-        PROXY_URL:
-        PID:
-        PGID:
-    ports:
-      - "25565:25577"
+  db:
+    image: mariadb:10
+    restart: always
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      MARIADB_DATABASE: ${MARIADB_DATABASE}
+      MARIADB_USER: ${MARIADB_USER}
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD}
+      MARIADB_AUTO_UPGRADE: "true"
     volumes:
-      - "${SRV_DIR}/proxy:/srv"
-    cap_drop:
-      - ALL
-    stdin_open: true
-    init: true
-    depends_on:
-      - db
+      - "${SRV_DIR}/mariadb:/var/lib/mysql"
+  mysql-db:
+    image: mysql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - "${SRV_DIR}/mysql:/var/lib/mysql"
+    cap_add:
+      - SYS_NICE
   world1:
     restart: unless-stopped
     build:
@@ -36,33 +45,25 @@ services:
     depends_on:
       - db
       - mysql-db
-  db:
-    image: mariadb:10
-    restart: always
-    environment:
-      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
-      MARIADB_DATABASE: ${MARIADB_DATABASE}
-      MARIADB_USER: ${MARIADB_USER}
-      MARIADB_PASSWORD: ${MARIADB_PASSWORD}
-      MARIADB_AUTO_UPGRADE: "true"
-    volumes:
-      - "${SRV_DIR}/mariadb:/var/lib/mysql"
-    depends_on:
       - redis
-  mysql-db:
-    image: mysql
-    hostname: mysql-db
-    command: --default-authentication-plugin=mysql_native_password
+  proxy:
     restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    build:
+      context: ./proxy
+      args:
+        PROXY_URL:
+        PID:
+        PGID:
+    ports:
+      - "25565:25577"
     volumes:
-      - "${SRV_DIR}/mysql:/var/lib/mysql"
-    cap_add:
-      - SYS_NICE
+      - "${SRV_DIR}/proxy:/srv"
+    cap_drop:
+      - ALL
+    stdin_open: true
+    init: true
+    depends_on:
+      - world1
   watcher:
     image: minecraft-watcher
     restart: "unless-stopped"
@@ -78,15 +79,4 @@ services:
       - ALL
     init: true
     depends_on:
-      - world1
       - proxy
-  # adminer:
-  #   image: adminer
-  #   restart: always
-  #   ports:
-  #     - 8181:8080
-  #   environment:
-  #     ADMINER_DESIGN: "dracula"
-  redis:
-    image: redis
-    restart: always
