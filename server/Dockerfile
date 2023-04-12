@@ -1,24 +1,24 @@
 FROM openjdk:17-slim
 
 RUN \
-apt-get update --yes --quiet && \
-apt-get install --yes --quiet --no-install-recommends wget neovim && \
-rm -rf /var/lib/apt/lists/*
+    apt-get update --yes --quiet && \
+    apt-get install --yes --quiet --no-install-recommends wget && \
+    rm -rf /var/lib/apt/lists/*
 
 ARG \
-SERVER_URL \
-PID=911 \
-PGID=911 \
-USER_NAME=minecraft \
-EULA=false
+    SERVER_URL \
+    PID=911 \
+    PGID=911 \
+    USER_NAME=minecraft \
+    EULA=false
 
 RUN \
-set -ex && \
-wget -q ${SERVER_URL} -O /opt/server.jar && \
-chmod +x /opt/server.jar && \
-groupadd -r -g ${PGID} ${USER_NAME} && \
-useradd -r -u ${PID} -g ${USER_NAME} -d /srv ${USER_NAME} && \
-chown -R ${PID}:${PGID} /srv
+    set -ex && \
+    wget -q ${SERVER_URL} -O /opt/server.jar && \
+    chmod +x /opt/server.jar && \
+    groupadd -r -g ${PGID} ${USER_NAME} && \
+    useradd -r -u ${PID} -g ${USER_NAME} -d /srv ${USER_NAME} && \
+    chown -R ${PID}:${PGID} /srv
 
 USER ${USER_NAME}
 
